@@ -107,7 +107,7 @@ app.post('/movies', (req, res) => {
             if (error.name === "SequelizeUniqueConstraintError") {
                 return res.status(422).send({ message: 'Name already exists, sorry :(' })
             } else {
-                return res.status(400).send({ message: 'Something went wrong, Hakuna Matata' })
+                return res.status(400).send({ message: 'Something went wrong, Try Again' })
             }
         })
 
