@@ -1,21 +1,33 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
-const port = 3000
-app.get('/', (req, res) => res.send('Hello World!'))
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
-// parse application/json
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+const port = 3000
+
+let messagesReceived = 0;
+
 app.post('/messages', (req, res) => {
-    console.log("this is the request body",req.body)
-    const message = { "message" : "Message received loud and clear"}
-        res.json(message)
+    let inputMsg = req.body
+    console.log("messages received:", messagesReceived)
+    if (messagesReceived >= 5) {
+        res.status(429).send("Too many requests")
+    } else {
+        if (inputMsg.hasOwnProperty('text')) {
+            messagesReceived++;
+            res.json({
+                message: "Message received loud and clear"
+            })
+        } else {
+            res.status(400).send("Bad Request")
+        }
+    }
+
 
 })
 
 
-app.get('/messages', (req, res) => {
-  
-})
+
+
+
 app.listen(port, () => console.log(`Listening on port ${port}!`))
