@@ -37,7 +37,17 @@ app.get('/movies', (req, res) => {
     return res.status(200).json(movies)
 })
 // Get a user's information
-app.get('/movies/:movieid', (req, res, next) => {/*..*/})
+app.get('/movies/:id', (req, res, next) => {
+    Movie.findByPk(req.params.id)
+        .then(movie => {
+            if (!movie) {
+                res.status(404).end()
+            } else {
+                res.json(movie)
+            }
+        })
+        .catch(next)
+})
 // Update a user's information
 app.put('/movies/:movieId', (req, res, next) => {/*..*/})
 
