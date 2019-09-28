@@ -9,7 +9,6 @@ let messagesReceived = 0;
 
 app.post('/messages', (req, res) => {
     let inputMsg = req.body
-    console.log("messages received:", messagesReceived)
     if (messagesReceived >= 5) {
         res.status(429).send("Too many requests")
     } else {
