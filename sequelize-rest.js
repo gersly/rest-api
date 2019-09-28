@@ -6,21 +6,21 @@ const port = 4000
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize('postgres://postgres:secret@localhost:5432/postgres');
 
-
+//--- Model ---//
 const Movie = sequelize.define('movie', {
     title: {
         type: Sequelize.STRING,
         allowNull: true
-      },
-      yearOfRelease: {
+    },
+    yearOfRelease: {
         type: Sequelize.INTEGER
-      },
-      synopsis: {
-          type: Sequelize.TEXT
-      }
-  });
+    },
+    synopsis: {
+        type: Sequelize.TEXT
+    }
+});
 
-// Mock - Data //
+//---- Mock - Data ----//
 const movies = [
     {
         title: "Goal! The Dream Begins",
@@ -37,19 +37,24 @@ const movies = [
         yearOfRelease: 2009,
         synopsis: "The heroes compete on the greatest stage of all, the FIFA World Cup Finals."
     }
-  ]
+]
 
-  sequelize.sync({force: false}) 
-    Movie.bulkCreate(movies)
+// ---- Seq Sync ---- //
+sequelize.sync({ force: false })
+Movie.bulkCreate(movies)
     .catch(err => {
         console.error('Unable to create tables, shutting down...', err);
-        process.exit(1); 
+        process.exit(1);
     })
 
 // ----- Routes ------ //
+//get homepage
+app.get('/', (req, res) => { return res.status(200).send('<h1><a href="/movies">Movies database</a></h1>') })
+//read all movies (the collections resource)
+app.get('/movies', (req, res) => { return res.status(200).json(movies) })
 
-app.get('/', (req, res) => {return res.status(200).send('<h1><a href="/movies">Movies database</a></h1>')})
-app.get('/movies', (req, res) => {return res.status(200).json(movies)})
+
+//read a single movie resource
 app.get('/movies/:id', (req, res, next) => {
     Movie.findByPk(req.params.id)
         .then(movie => {
@@ -61,22 +66,25 @@ app.get('/movies/:id', (req, res, next) => {
         })
         .catch(next)
 })
+
+//delete a single movie resource
 app.delete('/movies/:id', (req, res) => {
     const idToDestroy = parseInt(req.params.id)
-    Movie.destroy({where: {id: idToDestroy}})
-    .then(numdeleted => {
-        if(numdeleted === 0){ 
-            res.status(404).end()
-        } else {
-            res.status(204).end() 
-        }
-    })
-    .catch(error => {
-        return res.status(400).send({ message: 'Not Found' })
-    })
+    Movie.destroy({ where: { id: idToDestroy } })
+        .then(numdeleted => {
+            if (numdeleted === 0) {
+                res.status(404).end()
+            } else {
+                res.status(204).end()
+            }
+        })
+        .catch(error => {
+            return res.status(400).send({ message: 'Not Found' })
+        })
 })
+
+//update a single movie resource
 app.put('/movies/:id', (req, res, next) => {
-    console.log("this is the body", req.body)
     Movie.findByPk(req.params.id)
         .then(movie => {
             if (movie) {
@@ -86,6 +94,22 @@ app.put('/movies/:id', (req, res, next) => {
             return res.status(404).end()
         })
         .catch(next)
+
+})
+
+//create a new movie resource
+app.post('/movies', (req, res) => {
+    Movie.create(req.body)
+        .then(result => {
+            return res.status(201).json(result)
+        })
+        .catch(error => {
+            if (error.name === "SequelizeUniqueConstraintError") {
+                return res.status(422).send({ message: 'Name already exists, sorry :(' })
+            } else {
+                return res.status(400).send({ message: 'Something went wrong, Hakuna Matata' })
+            }
+        })
 
 })
 
